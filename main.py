@@ -220,7 +220,7 @@ async def get_best_developer(year: int):
 async def developer_reviews_analysis(desarrolladora: str):
     try:
         # Cargar una muestra aleatoria del 10% del archivo Parquet
-        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sentimientos_final.parquet"
+        parquet_url = "https://github.com/EliasIchi/VNGLOBAL/raw/main/sentimientos_final.parquet"
         df = pd.read_parquet(parquet_url)
         df_sample = df.sample(frac=0.1, random_state=42)  # Tomar el 10% de los datos
         
