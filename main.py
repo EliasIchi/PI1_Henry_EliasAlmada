@@ -212,3 +212,32 @@ async def get_best_developer(year: int):
     # Llamar a la función best_developer_year con el anio proporcionado
     result = best_developer_year(year)
     return result
+
+#####################################################################################################
+
+@app.get('/developer_reviews_analysis')
+async def developer_reviews_analysis(desarrolladora: str):
+    try:
+        # Cargar una muestra aleatoria del 10% del archivo Parquet
+        parquet_url = "https://github.com/EliasIchi/VNGLOBAL/raw/main/sentimientos_final.parquet"
+        df = pd.read_parquet(parquet_url)
+        df_sample = df.sample(frac=0.1, random_state=42)  # Tomar el 10% de los datos
+        
+        # Filtrar las reseñas para la desarrolladora especificada
+        df_desarrolladora = df_sample[df_sample['developer'] == desarrolladora]
+        
+        # Filtrar reseñas positivas y negativas
+        df_positive = df_desarrolladora[df_desarrolladora['sentiment_analysis'] == 2]
+        df_negative = df_desarrolladora[df_desarrolladora['sentiment_analysis'] == 0]
+        
+        # Contar la cantidad de reseñas positivas y negativas
+        positive_reviews = len(df_positive)
+        negative_reviews = len(df_negative)
+        
+        # Construir el diccionario de resultados
+        result = {desarrolladora: {'Positive': positive_reviews, 'Negative': negative_reviews}}
+        
+        return result
+    
+    except Exception as e:
+        return {'Error': str(e)}
