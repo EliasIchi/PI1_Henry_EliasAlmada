@@ -17,12 +17,8 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"message": """Bienvenido/a por favor ingresa al siguiente link para verificar las funciones creadas en fast api y conectadas gracias a render:
-https://sistema-recomendacion-steam.onrender.com/docs"""}
+    return {"message": """Bienvenido/a por favor ingresa al siguiente link para verificar las funciones creadas en fast api y conectadas gracias a render: https://sistema-recomendacion-steam.onrender.com/docs"""}
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
 
 
 
