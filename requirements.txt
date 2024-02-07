@@ -2,3 +2,4 @@ fastapi[all]
 pandas
 py7zr
 requests
+pyarrow
