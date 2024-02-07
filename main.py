@@ -176,7 +176,7 @@ def UserForGenre(genero: str, ruta_de_archivo_zip: str):
 
 # Define la ruta para obtener los datos del usuario
 @app.get('/UserForGenre/{genero}')
-async def get_user_data(genero: str):
+async def get_for_genre(genero: str):
     ruta_de_archivo_zip = "https://github.com/EliasIchi/VNGLOBAL/raw/main/UserForGenre.zip"
     resultado = UserForGenre(genero, ruta_de_archivo_zip)
     return resultado
