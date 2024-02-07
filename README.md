@@ -30,17 +30,6 @@ Se implementó un modelo de recomendación basado en similitud de géneros de ju
 API de Recomendación:
 
 Se creó una API con FastAPI que ofrece endpoints para obtener recomendaciones de juegos similares basados en un ID de juego dado.
-Interfaz de Usuario:
-
-Se desarrolló una interfaz de usuario para interactuar con la API y obtener recomendaciones de juegos de manera intuitiva.
-Tecnologías Utilizadas:
-Python
-Pandas
-NumPy
-FastAPI
-HTML/CSS
-GitHub
-Este proyecto representa una aplicación práctica de técnicas de Machine Learning para proporcionar recomendaciones personalizadas en el ámbito de los videojuegos, combinando análisis de datos, desarrollo de modelos y construcción de interfaces de usuario.
 
 
 
