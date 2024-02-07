@@ -258,7 +258,7 @@ def cargar_datos_juegos():
     df = pd.read_parquet(url_parquet)
     
     # Utilizaremos el método sample para seleccionar el 10% de los datos aleatoriamente
-    df_sampled = df.sample(frac=0.01, random_state=42)
+    df_sampled = df.sample(frac=0.5, random_state=42)
     return df_sampled
 
 # Calcular la similitud del coseno entre juegos basado en sus características
