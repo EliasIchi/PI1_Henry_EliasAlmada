@@ -249,16 +249,7 @@ async def developer_reviews_analysis(desarrolladora: str):
 
 
 # URL del archivo Parquet en GitHub
-url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
 
-
-from fastapi import FastAPI
-import pandas as pd
-
-url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
-
-
-# Cargar el DataFrame con los datos de los juegos y sus características
 url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
 
 # Cargar el DataFrame con los datos de los juegos y sus características
@@ -298,8 +289,6 @@ def recomendacion_juego(id_producto, df, num_recomendaciones=5):
 
     return juegos_recomendados[['id', 'app_name']].to_dict(orient='records')
 
-# Crear una instancia de FastAPI
-app = FastAPI()
 
 # Definir un endpoint GET para obtener recomendaciones de juegos similares dado un ID de juego
 @app.get("/recomendacion/{id_juego}")
