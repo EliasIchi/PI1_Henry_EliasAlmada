@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Path
 import pandas as pd
 from starlette.responses import RedirectResponse  # Corregir aquÃ­
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import pandas as pd
 import zipfile
@@ -9,16 +10,9 @@ import requests
 from pydantic import BaseModel
 from fastapi import Depends
 from zipfile import ZipFile
-from typing import Optional
-from fastapi import FastAPI
+import pyarrow
 
 app = FastAPI()
-
-
-async def root():
-    return {"message": """Bienvenido/a por favor ingresa al siguiente link para verificar las funciones creadas en fast api y conectadas gracias a render: https://sistema-recomendacion-steam.onrender.com/docs"""}
-
-
 
 
 
@@ -176,7 +170,45 @@ def UserForGenre(genero: str, ruta_de_archivo_zip: str):
 
 # Define la ruta para obtener los datos del usuario
 @app.get('/UserForGenre/{genero}')
-async def get_for_genre(genero: str):
+async def get_user_data(genero: str):
     ruta_de_archivo_zip = "https://github.com/EliasIchi/VNGLOBAL/raw/main/UserForGenre.zip"
     resultado = UserForGenre(genero, ruta_de_archivo_zip)
     return resultado
+
+########################################################################################################
+
+def best_developer_year(anio: int):
+    try:
+        # Cargar el archivo Parquet y obtener el DataFrame del archivo CSV dentro del Parquet
+        parquet_url = "https://github.com/EliasIchi/VNGLOBAL/raw/main/best_developer_year.parquet"
+        df = pd.read_parquet(parquet_url, engine='pyarrow', columns=['release_date', 'developer', 'recommend'])
+        
+        # Filtrar los juegos para el aniodado
+        df_filtered = df[df['release_date'].dt.year == anio]
+        
+        # Filtrar los juegos recomendados y con comentarios positivos
+        df_positive_reviews = df_filtered[df_filtered['recommend'] == True]
+        
+        # Contar la cantidad de juegos recomendados por desarrollador
+        developer_count = df_positive_reviews['developer'].str.split(',', expand=True)[0].value_counts()
+        
+        # Ordenar los desarrolladores según la cantidad de juegos recomendados
+        sorted_developers = developer_count.sort_values(ascending=False)
+        
+        # Tomar los primeros 3 desarrolladores
+        top_developers = sorted_developers.head(3)
+        
+        # Crear la lista de resultados
+        result = [{"Puesto " + str(i+1): developer, "Juegos Recomendados": count} for i, (developer, count) in enumerate(top_developers.items())]
+        
+        return result
+    
+    except Exception as e:
+        return {'Error': str(e)}
+
+
+@app.get("/best_developer/{year}")
+async def get_best_developer(year: int):
+    # Llamar a la función best_developer_year con el anio proporcionado
+    result = best_developer_year(year)
+    return result
