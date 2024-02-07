@@ -225,7 +225,7 @@ async def developer_reviews_analysis(desarrolladora: str):
         # Cargar una muestra aleatoria del 10% del archivo Parquet
         parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sentimientos_final.parquet"
         df = pd.read_parquet(parquet_url)
-        df_sample = df.sample(frac=0.1, random_state=42)  # Tomar el 10% de los datos
+        df_sample = df.sample(frac=0.05, random_state=42)  # Tomar el 10% de los datos
         
         # Filtrar las reseñas para la desarrolladora especificada
         df_desarrolladora = df_sample[df_sample['developer'] == desarrolladora]
