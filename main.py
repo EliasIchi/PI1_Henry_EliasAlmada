@@ -19,7 +19,7 @@ app = FastAPI()
 
 #######################################################################################
 
-ruta_de_archivo_zip1 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/datasets/raw/main/def_developer.zip"
+ruta_de_archivo_zip1 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/def_developer.zip"
 
 
 def cargar_datos_desarrollador():
@@ -89,7 +89,7 @@ async def developer(desarrollador: str):
 
 #############################################################################################################
 
-ruta_de_archivo_zip2 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/datasets/raw/main/def_userdata.zip"
+ruta_de_archivo_zip2 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/def_userdata.zip"
 
 
 class UserData(BaseModel):
@@ -172,7 +172,7 @@ def UserForGenre(genero: str, ruta_de_archivo_zip: str):
 # Define la ruta para obtener los datos del usuario
 @app.get('/UserForGenre/{genero}')
 async def get_user_data(genero: str):
-    ruta_de_archivo_zip = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/datasets/raw/main/UserForGenre.zip"
+    ruta_de_archivo_zip = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/UserForGenre.zip"
     resultado = UserForGenre(genero, ruta_de_archivo_zip)
     return resultado
 
@@ -181,7 +181,7 @@ async def get_user_data(genero: str):
 def best_developer_year(anio: int):
     try:
         # Cargar el archivo Parquet y obtener el DataFrame del archivo CSV dentro del Parquet
-        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/datasets/raw/main/best_developer_year.parquet"
+        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/best_developer_year.parquet"
         df = pd.read_parquet(parquet_url, engine='pyarrow', columns=['release_date', 'developer', 'recommend'])
         
         # Filtrar los juegos para el aniodado
@@ -220,7 +220,7 @@ async def get_best_developer(year: int):
 async def developer_reviews_analysis(desarrolladora: str):
     try:
         # Cargar una muestra aleatoria del 10% del archivo Parquet
-        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/datasets/raw/main/sentimientos_final.parquet"
+        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sentimientos_final.parquet"
         df = pd.read_parquet(parquet_url)
         df_sample = df.sample(frac=0.1, random_state=42)  # Tomar el 10% de los datos
         
