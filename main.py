@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Path
 import pandas as pd
 from starlette.responses import RedirectResponse  # Corregir aquÃ­
-from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import pandas as pd
 import zipfile
@@ -10,9 +9,21 @@ import requests
 from pydantic import BaseModel
 from fastapi import Depends
 from zipfile import ZipFile
-
+from typing import Optional
+from fastapi import FastAPI
 
 app = FastAPI()
+
+
+@app.get("/")
+async def root():
+    return {"message": """Bienvenido/a por favor ingresa al siguiente link para verificar las funciones creadas en fast api y conectadas gracias a render:
+https://sistema-recomendacion-steam.onrender.com/docs"""}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: Optional[str] = None):
+    return {"item_id": item_id, "q": q}
+
 
 
 
