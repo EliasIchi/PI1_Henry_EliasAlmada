@@ -1,27 +1,47 @@
-# Deploy FastAPI on Render
+Proyecto Integrador de Machine Learning - Sistema de Recomendación
+Este proyecto consiste en la implementación de un sistema de recomendación de juegos utilizando técnicas de Machine Learning. A continuación, se detalla el contenido y las funcionalidades desarrolladas:
 
-Use this repo as a template to deploy a Python [FastAPI](https://fastapi.tiangolo.com) service on Render.
+Contenido:
+Creación de Funciones:
 
-See https://render.com/docs/deploy-fastapi or follow the steps below:
+Se crearon funciones para cargar datos, realizar análisis exploratorio de datos (EDA) y construir el modelo de recomendación.
+Análisis Exploratorio de Datos (EDA):
 
-## Manual Steps
+Se exploraron diferentes DataFrames para comprender la estructura y características de los datos relacionados con los juegos.
+Modelo de Recomendación:
 
-1. You may use this repository directly or [create your own repository from this template](https://github.com/render-examples/fastapi/generate) if you'd like to customize the code.
-2. Create a new Web Service on Render.
-3. Specify the URL to your new repository or this repository.
-4. Render will automatically detect that you are deploying a Python service and use `pip` to download the dependencies.
-5. Specify the following as the Start Command.
+Se implementó un modelo de recomendación utilizando algoritmos de similitud para sugerir juegos similares en función de las preferencias del usuario.
+Desarrollo de API con FastAPI:
 
-    ```shell
-    uvicorn main:app --host 0.0.0.0 --port $PORT
-    ```
+Se desarrolló una API utilizando FastAPI para proporcionar un servicio de recomendación de juegos en tiempo real.
+Interfaz de Usuario (UI):
 
-6. Click Create Web Service.
+Se integró la API de recomendación con una interfaz de usuario para permitir a los usuarios obtener recomendaciones personalizadas de juegos.
+Uso:
+Carga de Datos:
 
-Or simply click:
+Se carga el conjunto de datos de juegos desde un archivo Parquet almacenado en GitHub.
+Análisis Exploratorio de Datos:
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/render-examples/fastapi)
+Se realizó un análisis exploratorio de datos para comprender las características de los juegos y su distribución.
+Modelo de Recomendación:
 
-## Thanks
+Se implementó un modelo de recomendación basado en similitud de géneros de juegos para sugerir juegos similares.
+API de Recomendación:
 
-Thanks to [Harish](https://harishgarg.com) for the [inspiration to create a FastAPI quickstart for Render](https://twitter.com/harishkgarg/status/1435084018677010434) and for some sample code!
+Se creó una API con FastAPI que ofrece endpoints para obtener recomendaciones de juegos similares basados en un ID de juego dado.
+Interfaz de Usuario:
+
+Se desarrolló una interfaz de usuario para interactuar con la API y obtener recomendaciones de juegos de manera intuitiva.
+Tecnologías Utilizadas:
+Python
+Pandas
+NumPy
+FastAPI
+HTML/CSS
+GitHub
+Este proyecto representa una aplicación práctica de técnicas de Machine Learning para proporcionar recomendaciones personalizadas en el ámbito de los videojuegos, combinando análisis de datos, desarrollo de modelos y construcción de interfaces de usuario.
+
+
+
+
