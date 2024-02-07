@@ -105,7 +105,7 @@ class UserData(BaseModel):
 
 
 def cargar_datos_usuario() -> pd.DataFrame:
-    response = requests.get(ruta_de_archivo_zip)
+    response = requests.get(ruta_de_archivo_zip2)
     with ZipFile(BytesIO(response.content)) as zipf:
         with zipf.open('def_userdata.csv') as f:
             df = pd.read_csv(f, sep=',', encoding='latin-1')
