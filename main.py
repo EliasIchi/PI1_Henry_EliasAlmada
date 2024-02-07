@@ -15,7 +15,6 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.get("/")
 async def root():
     return {"message": """Bienvenido/a por favor ingresa al siguiente link para verificar las funciones creadas en fast api y conectadas gracias a render: https://sistema-recomendacion-steam.onrender.com/docs"""}
 
