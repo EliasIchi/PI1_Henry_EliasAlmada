@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from fastapi import Depends
 from zipfile import ZipFile
 import pyarrow
-from sklearn.feature_extraction.text import CountVectorizer
 
 app = FastAPI()
 
@@ -252,53 +251,59 @@ async def developer_reviews_analysis(desarrolladora: str):
 # URL del archivo Parquet en GitHub
 url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
 
+
+from fastapi import FastAPI
+import pandas as pd
+
+url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
+
+
+# Cargar el DataFrame con los datos de los juegos y sus características
+url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
+
 # Cargar el DataFrame con los datos de los juegos y sus características
 def cargar_datos_juegos():
     # Cargar el DataFrame desde el archivo Parquet en GitHub
     df = pd.read_parquet(url_parquet)
-    
-    # Utilizaremos el método sample para seleccionar el 10% de los datos aleatoriamente
-    df_sampled = df.sample(frac=0.5, random_state=42)
-    return df_sampled
-
-# Calcular la similitud del coseno entre juegos basado en sus características
-def calcular_similitud_juegos(df):
-    # Vectorizar los géneros de los juegos
-    vectorizer = CountVectorizer()
-    X = vectorizer.fit_transform(df['genres'].fillna(''))
-
-    # Calcular la similitud del coseno entre los vectores de características
-    similarity_matrix = cosine_similarity(X)
-    return similarity_matrix
+    return df
 
 # Función de recomendación de juegos similares a uno dado
-def recomendacion_juego(id_producto, df, similarity_matrix, num_recomendaciones=5):
+def recomendacion_juego(id_producto, df, num_recomendaciones=5):
     # Verificar si el ID del producto dado existe en el DataFrame
     if id_producto not in df['id'].values:
-        return "El ID del producto especificado no existe en el DataFrame"
+        raise HTTPException(status_code=404, detail="El ID del producto especificado no existe en el DataFrame")
     
-    # Obtener el índice del juego dado
-    indice_juego = df[df['id'] == id_producto].index[0]
+    # Obtener el género del juego dado
+    genero_juego = df[df['id'] == id_producto]['genres'].iloc[0]
 
-    # Obtener las similitudes del juego dado con otros juegos
-    similitudes_juego = similarity_matrix[indice_juego]
+    # Filtrar juegos con el mismo género y obtener juegos similares
+    juegos_similares = df[df['genres'].str.contains(genero_juego) & (df['id'] != id_producto)]
 
-    # Obtener los índices de los juegos más similares
-    indices_recomendados = similitudes_juego.argsort()[-num_recomendaciones-1:-1][::-1]
+    # Si hay menos de num_recomendaciones juegos similares, completar con los siguientes juegos en el DataFrame
+    num_similares = len(juegos_similares)
+    if num_similares < num_recomendaciones:
+        # Obtener los siguientes juegos en el DataFrame sin repetir
+        siguientes_juegos = df[~df['id'].isin(juegos_similares['id'])].head(num_recomendaciones - num_similares)
+        # Concatenar juegos similares con siguientes juegos
+        juegos_recomendados = pd.concat([juegos_similares, siguientes_juegos])
+    else:
+        juegos_recomendados = juegos_similares
 
-    # Obtener los IDs y nombres de los juegos recomendados
-    juegos_recomendados = []
-    for indice in indices_recomendados:
-        id_juego = df.iloc[indice]['id']
-        nombre_juego = df.iloc[indice]['app_name']
-        juegos_recomendados.append((id_juego, nombre_juego))
+    # Eliminar juegos con nombres duplicados
+    juegos_recomendados = juegos_recomendados.drop_duplicates(subset=['app_name'])
 
-    return juegos_recomendados
+    # Si hay más de num_recomendaciones juegos recomendados, seleccionar 5 al azar
+    if len(juegos_recomendados) > num_recomendaciones:
+        juegos_recomendados = juegos_recomendados.sample(n=num_recomendaciones)
 
-# Endpoint GET para obtener recomendaciones de juegos similares dado un ID de juego
-@app.get("/recomendaciones/{id_producto}")
-def obtener_recomendaciones(id_producto: int):
+    return juegos_recomendados[['id', 'app_name']].to_dict(orient='records')
+
+# Crear una instancia de FastAPI
+app = FastAPI()
+
+# Definir un endpoint GET para obtener recomendaciones de juegos similares dado un ID de juego
+@app.get("/recomendacion/{id_juego}")
+async def obtener_recomendaciones(id_juego: int):
     df = cargar_datos_juegos()
-    similarity_matrix = calcular_similitud_juegos(df)
-    recomendaciones = recomendacion_juego(id_producto, df, similarity_matrix)
-    return {"recomendaciones": recomendaciones}
+    recomendaciones = recomendacion_juego(id_juego, df)
+    return recomendaciones
