@@ -11,19 +11,19 @@ from pydantic import BaseModel
 from fastapi import Depends
 from zipfile import ZipFile
 import pyarrow
+from sklearn.feature_extraction.text import CountVectorizer
 
 app = FastAPI()
 
-@app.get("/")
 
+@app.get("/")
 def root():
     return RedirectResponse(url="/docs/")
 
 
 #######################################################################################
 
-ruta_de_archivo_zip1 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/def_developer.zip"
-
+ruta_de_archivo_zip1 = "https://github.com/EliasIchi/VNGLOBAL/raw/main/def_developer.zip"
 
 def cargar_datos_desarrollador():
     # Descargar y descomprimir el archivo ZIP desde GitHub
@@ -92,7 +92,7 @@ async def developer(desarrollador: str):
 
 #############################################################################################################
 
-ruta_de_archivo_zip2 = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/def_userdata.zip"
+ruta_de_archivo_zip2 = "https://github.com/EliasIchi/VNGLOBAL/raw/main/def_userdata.zip"
 
 
 class UserData(BaseModel):
@@ -175,7 +175,7 @@ def UserForGenre(genero: str, ruta_de_archivo_zip: str):
 # Define la ruta para obtener los datos del usuario
 @app.get('/UserForGenre/{genero}')
 async def get_user_data(genero: str):
-    ruta_de_archivo_zip = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/UserForGenre.zip"
+    ruta_de_archivo_zip = "https://github.com/EliasIchi/VNGLOBAL/raw/main/UserForGenre.zip"
     resultado = UserForGenre(genero, ruta_de_archivo_zip)
     return resultado
 
@@ -184,7 +184,7 @@ async def get_user_data(genero: str):
 def best_developer_year(anio: int):
     try:
         # Cargar el archivo Parquet y obtener el DataFrame del archivo CSV dentro del Parquet
-        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/best_developer_year.parquet"
+        parquet_url = "https://github.com/EliasIchi/VNGLOBAL/raw/main/best_developer_year.parquet"
         df = pd.read_parquet(parquet_url, engine='pyarrow', columns=['release_date', 'developer', 'recommend'])
         
         # Filtrar los juegos para el aniodado
@@ -223,9 +223,9 @@ async def get_best_developer(year: int):
 async def developer_reviews_analysis(desarrolladora: str):
     try:
         # Cargar una muestra aleatoria del 10% del archivo Parquet
-        parquet_url = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sentimientos_final.parquet"
+        parquet_url = "https://github.com/EliasIchi/VNGLOBAL/raw/main/sentimientos_final.parquet"
         df = pd.read_parquet(parquet_url)
-        df_sample = df.sample(frac=0.05, random_state=42)  # Tomar el 10% de los datos
+        df_sample = df.sample(frac=0.1, random_state=42)  # Tomar el 10% de los datos
         
         # Filtrar las reseñas para la desarrolladora especificada
         df_desarrolladora = df_sample[df_sample['developer'] == desarrolladora]
@@ -245,3 +245,60 @@ async def developer_reviews_analysis(desarrolladora: str):
     
     except Exception as e:
         return {'Error': str(e)}
+
+################################################################################################
+
+
+# URL del archivo Parquet en GitHub
+url_parquet = "https://github.com/EliasIchi/PI1_Henry_EliasAlmada/raw/main/datasets/sistema_de_recomendacion.parquet"
+
+# Cargar el DataFrame con los datos de los juegos y sus características
+def cargar_datos_juegos():
+    # Cargar el DataFrame desde el archivo Parquet en GitHub
+    df = pd.read_parquet(url_parquet)
+    
+    # Utilizaremos el método sample para seleccionar el 10% de los datos aleatoriamente
+    df_sampled = df.sample(frac=0.1, random_state=42)
+    return df_sampled
+
+# Calcular la similitud del coseno entre juegos basado en sus características
+def calcular_similitud_juegos(df):
+    # Vectorizar los géneros de los juegos
+    vectorizer = CountVectorizer()
+    X = vectorizer.fit_transform(df['genres'].fillna(''))
+
+    # Calcular la similitud del coseno entre los vectores de características
+    similarity_matrix = cosine_similarity(X)
+    return similarity_matrix
+
+# Función de recomendación de juegos similares a uno dado
+def recomendacion_juego(id_producto, df, similarity_matrix, num_recomendaciones=5):
+    # Verificar si el ID del producto dado existe en el DataFrame
+    if id_producto not in df['id'].values:
+        return "El ID del producto especificado no existe en el DataFrame"
+    
+    # Obtener el índice del juego dado
+    indice_juego = df[df['id'] == id_producto].index[0]
+
+    # Obtener las similitudes del juego dado con otros juegos
+    similitudes_juego = similarity_matrix[indice_juego]
+
+    # Obtener los índices de los juegos más similares
+    indices_recomendados = similitudes_juego.argsort()[-num_recomendaciones-1:-1][::-1]
+
+    # Obtener los IDs y nombres de los juegos recomendados
+    juegos_recomendados = []
+    for indice in indices_recomendados:
+        id_juego = df.iloc[indice]['id']
+        nombre_juego = df.iloc[indice]['app_name']
+        juegos_recomendados.append((id_juego, nombre_juego))
+
+    return juegos_recomendados
+
+# Endpoint GET para obtener recomendaciones de juegos similares dado un ID de juego
+@app.get("/recomendaciones/{id_producto}")
+def obtener_recomendaciones(id_producto: int):
+    df = cargar_datos_juegos()
+    similarity_matrix = calcular_similitud_juegos(df)
+    recomendaciones = recomendacion_juego(id_producto, df, similarity_matrix)
+    return {"recomendaciones": recomendaciones}
