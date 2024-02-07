@@ -15,6 +15,8 @@ import pyarrow
 app = FastAPI()
 
 
+def root():
+    return RedirectResponse(url="/docs/")
 
 
 #######################################################################################
