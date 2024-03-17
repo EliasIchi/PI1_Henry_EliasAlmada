@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BUCKETGCP: ${{ secrets.GCP }}
+      BUCKETGCP: ${{ vars.GCP2 }}
 
     steps:
       - name: Crear archivo JSON con secreto
-        run: echo '${{ secrets.GCP }}' > secret.json
+        run: echo '${{ vars.GCP2 }}' > secret.json
 
       - name: Guardar archivo JSON como artefacto
         uses: actions/upload-artifact@v2
