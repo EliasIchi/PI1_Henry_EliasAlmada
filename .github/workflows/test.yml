@@ -8,12 +8,12 @@ on:
 jobs:
   crear-archivo-json:
     runs-on: ubuntu-latest
-    
 
     steps:
-        env:
       - name: Crear archivo JSON con secreto
-        run: echo " prueba 5001 ${{ vars.GCP2 }}" > secret.json
+        env:
+          BUCKETGCP: ${{ secrets.GCP }}
+        run: echo '${{ secrets.GCP }} > secret.json
 
       - name: Guardar archivo JSON como artefacto
         uses: actions/upload-artifact@v2
