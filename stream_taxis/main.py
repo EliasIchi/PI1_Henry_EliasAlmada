@@ -85,7 +85,8 @@ def mostrar_interfaz():
         MILLAS_CONV_T3) AS MILLAS_TOTAL,
         LAG(MILLAS_TOTAL, 1) OVER (ORDER BY id ASC) AS MILLAS_ANTERIOR
         FROM SCHEMA_TAXIS_NYC_ECODRIVE.PUBLIC.USO_VEHICULOS_ELECTRICOS
-        ORDER BY id ASC) AS A;
+        ORDER BY id ASC) AS A
+        GROUP BY FECHA;
         """
         resultados = ejecutar_consulta(sql_query)
         if resultados is not None:
