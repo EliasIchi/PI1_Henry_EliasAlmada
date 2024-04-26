@@ -1,5 +1,6 @@
 import streamlit as st
 import snowflake.connector
+import pandas as pd
 
 snowflake_credentials = {
     'user': 'ELIASALMADA1234',
@@ -10,15 +11,8 @@ snowflake_credentials = {
     'schema': 'PUBLIC'
 }
 
-def establecer_conexion():
-    try:
-        # Establecer conexión a Snowflake
-        conexion = snowflake.connector.connect(**snowflake_credentials)
-        st.success("¡Conexión exitosa a Snowflake!")
-        return conexion
-    except snowflake.connector.errors.DatabaseError as e:
-        st.error(f"Error al conectar a Snowflake: {e}")
-        return None
+# Establecer la conexión a Snowflake al inicio de la aplicación
+conexion = snowflake.connector.connect(**snowflake_credentials)
 
 def subir_datos_a_base_de_datos(conn, fecha, millas_electrico_turno_1, millas_electrico_turno_2,
                                 millas_electrico_turno_3, millas_convencionales_turno_1,
@@ -33,17 +27,31 @@ def subir_datos_a_base_de_datos(conn, fecha, millas_electrico_turno_1, millas_el
                             {millas_convencionales_turno_2}, {millas_convencionales_turno_3})""")
         
         conn.commit()
-        st.success("Datos insertados correctamente en Snowflake.")
+        st.success("Datos insertados correctamente en base de datos.")
 
     except snowflake.connector.errors.DatabaseError as e:
-        st.error(f"Error al insertar datos en Snowflake: {e}")
+        st.error(f"Error al insertar datos en base de datos: {e}")
 
     finally:
         # Cerrar el cursor
         cursor.close()
 
-def registrar_uso():
-    fecha = st.text_input("Fecha")
+def obtener_ultimos_registros(conn):
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"""SELECT * FROM SCHEMA_TAXIS_NYC_ECODRIVE.PUBLIC.USO_VEHICULOS_ELECTRICOS 
+                           ORDER BY Fecha DESC LIMIT 3""")
+        registros = cursor.fetchall()
+        columnas = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(registros, columns=columnas)
+        return df
+
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Error al obtener los últimos registros: {e}")
+        return None
+
+def mostrar_interfaz():
+    fecha = st.date_input("Fecha", format="YYYY-MM-DD")  # Forzar el formato de fecha a aaaa-mm-dd
     millas_electrico_turno_1 = st.number_input("Millas Eléc. Turno 1")
     millas_electrico_turno_2 = st.number_input("Millas Eléc. Turno 2")
     millas_electrico_turno_3 = st.number_input("Millas Eléc. Turno 3")
@@ -51,18 +59,17 @@ def registrar_uso():
     millas_convencionales_turno_2 = st.number_input("Millas Conv. Turno 2")
     millas_convencionales_turno_3 = st.number_input("Millas Conv. Turno 3")
 
-    conexion = establecer_conexion()
-    if conexion is None:
-        return
+    if st.button("Registrar Uso"):
+        subir_datos_a_base_de_datos(conexion, fecha, millas_electrico_turno_1, millas_electrico_turno_2,
+                                    millas_electrico_turno_3, millas_convencionales_turno_1,
+                                    millas_convencionales_turno_2, millas_convencionales_turno_3)
 
-    subir_datos_a_base_de_datos(conexion, fecha, millas_electrico_turno_1, millas_electrico_turno_2,
-                                millas_electrico_turno_3, millas_convencionales_turno_1,
-                                millas_convencionales_turno_2, millas_convencionales_turno_3)
-    conexion.close()
-
-    st.success("Datos registrados correctamente en Snowflake.")
+    # Mostrar los últimos 3 registros después de registrar nuevos datos
+    st.subheader("Últimos 3 Registros:")
+    ultimos_registros = obtener_ultimos_registros(conexion)
+    if ultimos_registros is not None:
+        st.write(ultimos_registros)
 
 # Crear la interfaz gráfica con Streamlit
 st.title("Registro de Uso de Vehículos Eléctricos")
-
-registrar_uso()
+mostrar_interfaz()
