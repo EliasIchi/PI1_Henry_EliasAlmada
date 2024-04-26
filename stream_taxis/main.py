@@ -26,7 +26,7 @@ def subir_datos_a_base_de_datos(conn, fecha, millas_electrico_turno_1, millas_el
     try:
         cursor = conn.cursor()
         
-        cursor.execute(f"""INSERT INTO TEST.PUBLIC.FASD (Fecha, Millas_Elec_T1, Millas_Elec_T2, Millas_Elec_T3, 
+        cursor.execute(f"""INSERT INTO SCHEMA_TAXIS_NYC_ECODRIVE.PUBLIC.USO_VEHICULOS_ELECTRICOS (Fecha, Millas_Elec_T1, Millas_Elec_T2, Millas_Elec_T3, 
                             Millas_Conv_T1, Millas_Conv_T2, Millas_Conv_T3) 
                             VALUES ('{fecha}', {millas_electrico_turno_1}, {millas_electrico_turno_2}, 
                             {millas_electrico_turno_3}, {millas_convencionales_turno_1}, 
