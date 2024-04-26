@@ -14,6 +14,19 @@ snowflake_credentials = {
 # Establecer la conexión a Snowflake al inicio de la aplicación
 conexion = snowflake.connector.connect(**snowflake_credentials)
 
+def ejecutar_consulta(sql_query):
+    try:
+        cursor = conexion.cursor()
+        cursor.execute(sql_query)
+        registros = cursor.fetchall()
+        columnas = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(registros, columns=columnas)
+        return df
+    except snowflake.connector.errors.DatabaseError as e:
+        st.error(f"Error al ejecutar consulta: {e}")
+        return None
+    finally:
+        cursor.close()
 def subir_datos_a_base_de_datos(conn, fecha, millas_electrico_turno_1, millas_electrico_turno_2,
                                 millas_electrico_turno_3, millas_convencionales_turno_1,
                                 millas_convencionales_turno_2, millas_convencionales_turno_3):
@@ -36,20 +49,6 @@ def subir_datos_a_base_de_datos(conn, fecha, millas_electrico_turno_1, millas_el
         # Cerrar el cursor
         cursor.close()
 
-def obtener_ultimos_registros(conn):
-    try:
-        cursor = conn.cursor()
-        cursor.execute(f"""SELECT * FROM SCHEMA_TAXIS_NYC_ECODRIVE.PUBLIC.USO_VEHICULOS_ELECTRICOS 
-                           ORDER BY Fecha DESC LIMIT 3""")
-        registros = cursor.fetchall()
-        columnas = [desc[0] for desc in cursor.description]
-        df = pd.DataFrame(registros, columns=columnas)
-        return df
-
-    except snowflake.connector.errors.DatabaseError as e:
-        st.error(f"Error al obtener los últimos registros: {e}")
-        return None
-
 def mostrar_interfaz():
     fecha = st.date_input("Fecha", format="YYYY-MM-DD")  # Forzar el formato de fecha a aaaa-mm-dd
     millas_electrico_turno_1 = st.number_input("Millas Eléc. Turno 1")
@@ -64,12 +63,36 @@ def mostrar_interfaz():
                                     millas_electrico_turno_3, millas_convencionales_turno_1,
                                     millas_convencionales_turno_2, millas_convencionales_turno_3)
 
-    # Mostrar los últimos 3 registros después de registrar nuevos datos
-    st.subheader("Últimos 3 Registros:")
-    ultimos_registros = obtener_ultimos_registros(conexion)
-    if ultimos_registros is not None:
-        st.write(ultimos_registros)
+    if st.button("Mostrar resultados"):
+        sql_query = """
+        SELECT
+        FECHA,
+        MILLAS_ELEC_T1,
+        MILLAS_ELEC_T2,
+        MILLAS_ELEC_T3,
+        MILLAS_CONV_T1,
+        MILLAS_CONV_T2,
+        MILLAS_CONV_T3,
+        MILLAS_TOTAL / MILLAS_ANTERIOR AS PORCENTAJE_PARTICIPACION_FLOTA_ELECTRICA
+        FROM
+        (
+        SELECT *,
+        (MILLAS_ELEC_T1 +
+        MILLAS_ELEC_T2 +
+        MILLAS_ELEC_T3 +
+        MILLAS_CONV_T1 +
+        MILLAS_CONV_T2 +
+        MILLAS_CONV_T3) AS MILLAS_TOTAL,
+        LAG(MILLAS_TOTAL, 1) OVER (ORDER BY id ASC) AS MILLAS_ANTERIOR
+        FROM SCHEMA_TAXIS_NYC_ECODRIVE.PUBLIC.USO_VEHICULOS_ELECTRICOS
+        ORDER BY id ASC) AS A;
+        """
+        resultados = ejecutar_consulta(sql_query)
+        if resultados is not None:
+            st.write(resultados)
+            st.success("Consulta ejecutada correctamente.")
 
 # Crear la interfaz gráfica con Streamlit
-st.title("Registro de Uso de Vehículos Eléctricos")
+st.title("Análisis de Uso de Vehículos Eléctricos")
 mostrar_interfaz()
+
